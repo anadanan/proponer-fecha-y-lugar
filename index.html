@@ -9,16 +9,30 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
 
     <title>PROPONER DIA!</title>
+    <style media="screen">
+      div.card{
+
+      }
+    </style>
   </head>
   <body>
     <h1>Elige tu mejor día</h1>
     <header>
       <div class="seleccionar" id="seleccion" style="">
         <input id="fecha" type="date" name="date" value=""><br>
-        <input id="lugar" type="text" name="lugar" value="ciudad">
-        <button id="botonCrear" type="button" name="button">CREAR</button>
+        <select id="lugar">
+          <option value="Bilbao">Bilbao</option>
+          <option value="Santurce">Santurce</option>
+          <option value="Portugalete">Portugalete</option>
+          <option value="Sestao">Sestao</option>
+        </select><br>
+        <button id="botonCrear" class="badge badge-primary" type="button" name="button">CREAR</button>
       </div>
     </header>
+    <div class="caja">
+
+
+    </div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -28,7 +42,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
     <script type="text/javascript">
 
+    $('button#botonCrear').click(function (event){
+    var fecha = $('input#fecha').val();
+    var lugar =  $('select#lugar').val();
+    console.log(lugar);
+      if (!fecha){
+        return alert("selecciona la fecha");
+      }
+      if (!lugar){
+        return alert("selecciona lugar");
+      }
+      $(".caja").append("<div class='card' style='width: 10rem;'><div class='card-body'><h5 class='card-title'>Fecha</h5><h6 id='2' class='card-subtitle mb-2 text-muted'>Lugar</h6><button type='button'class='card-link' name='button'>votar</button></div></div>")
+        $("h5.card-title").html(fecha);
+        $("h6#2").html(lugar);
 
 
+    });
+//$(document).on("click", "#votar", function(){//para que funciones el boton de la caja
+
+//})
+
+
+    </script>
   </body>
 </html>
