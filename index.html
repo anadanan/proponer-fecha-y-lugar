@@ -30,7 +30,8 @@
       </div>
     </header>
     <div class="caja">
-
+    </div>
+    <div class="contarvotos">
 
     </div>
 
@@ -52,17 +53,17 @@
       if (!lugar){
         return alert("selecciona lugar");
       }
-      $(".caja").append("<div class='card' style='width: 10rem;'><div class='card-body'><h5 class='card-title'>Fecha</h5><h6 id='2' class='card-subtitle mb-2 text-muted'>Lugar</h6><button type='button'class='card-link' name='button'>votar</button></div></div>")
-        $("h5.card-title").html(fecha);
-        $("h6#2").html(lugar);
+      $(".caja").append("<div class='card' style='width: 10rem;'><div class='card-body'><h5 class='card-title'>"+ fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h2><span>0</span> Votos</h2></div></div>")
+      });
 
-
-    });
-//$(document).on("click", "#votar", function(){//para que funciones el boton de la caja
-
-//})
-
-
+$(document).on("click", ".votar", function(event){//para que funciones el boton de la caja
+  var span = $(event.currentTarget).next('h2').children('span');//para que detecte el boton de cada caja
+  var contador = parseInt(span.text())
+  //me busca el siguiente, en este caso el h2, me busca a su hijo, el span (todo lo he metido en el append)
+contador++
+  console.log(span)
+  span.text(contador);
+  });
     </script>
   </body>
 </html>
