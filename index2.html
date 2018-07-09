@@ -29,9 +29,9 @@
         <button id="botonCrear" class="badge badge-primary" type="button" name="button">CREAR</button>
       </div>
     </header>
-    <div class="rou nav">
+    <div class="rou">
 
-    <div class="caja nav-item">
+    <div class="caja">
     </div>
 
   </div>
@@ -61,35 +61,22 @@
       $(".caja").append("<div class='card' style='width: 10rem;'><div class='card-body'><h5 class='card-title'>"+ fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h6 class='sumarvotos'><span>0</span> Votos</h6><button type='button'class='card-link restar' name='button'>restar</button></div></div>")
       });
 
-$(document).on("click", ".votar", function votaUsuario(event){//para que funciones el boton de la caja
+$(document).on("click", ".votar", function(event){//para que funciones el boton de la caja
   var span = $(event.currentTarget).next('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
     //me busca el siguiente, en este caso el h2, me busca a su hijo, el span (todo lo he metido en el append)
   var contador = parseInt(span.text());//para sacar el valor del span span.text()
   //lo convertimos en numero con parseInt(span.text())
-  contador++
-  console.log(span);
-  console.log(contador);
-      span.text(contador);
-      $(event.currentTarget).attr("disabled",true);//desactiva el boton votar
-      alert("Sólo se puede votar 1 vez");
-    $(event.currentTarget).next('h6.sumarvotos').next('button.restar').attr("disabled", false);
-
+contador++
+  console.log(span)
+  span.text(contador);
   });
-
-$(document).on("click", ".restar", function restaUsuario (event){//para que funciones el boton de la caja
+$(document).on("click", ".restar", function(event){//para que funciones el boton de la caja
   var spanrestar = $(event.currentTarget).prev('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
   var restar = spanrestar.text();//para sacar el valor del span span.text()
   restar--
-  console.log(restar);
-  console.log(spanrestar);
-  spanrestar.text(restar);
-    $(event.currentTarget).attr("disabled",true);// desativa el boton restar
-    alert("Sólo se puede restar 1 vez");
-    $(event.currentTarget).prev('h6.sumarvotos').prev('button.votar').attr("disabled", false);
-
-
+console.log(restar);
+spanrestar.text(restar);
 });
-
 
     </script>
   </body>
