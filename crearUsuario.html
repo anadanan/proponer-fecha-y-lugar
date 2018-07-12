@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+
+    <title>CREAR USUARIO!</title>
+    <style media="screen">
+    .rojo {
+        border-style: solid;
+        border-color: red;
+    }
+    .faltanombre {
+        border-style: solid;
+        border-color: green;
+    }
+    .faltacontraseña {
+        border-style: solid;
+        border-color: red green blue yellow;
+    }
+    </style>
+  </head>
+
+  <body>
+    <h3>INICIA SESION</h3>
+    Nombre: <input id="username" type="text" name="nombre" value="ana"><br><!--value="ana" es el nombre que ha puesto Joseba en su servidor para entrar-->
+    Password: <input id="password" type="password" name="password" value="diana"><br><!--value="diana"> es la contraseña que ha puesto Joseba en su servidor para entrar-->
+    <button id="iniciar-sesion" type="submit" name="button">ENVIAR</button><br><br>
+    <h5 id="h5mensaje"></h5>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+
+        $("button#iniciar-sesion").click(function(){
+            $("input#username").removeClass("rojo");
+            $("input#password").removeClass("rojo");
+            $("h5#h5mensaje").text("");
+
+          var username= $("input#username").val();
+          var password= $("input#password").val();
+          $.ajax({
+            url: "http://192.168.100.62:1337/usuario/",
+            type: "POST",
+            data: {
+              username: username,
+              password: password
+            }
+          })
+          .done(function (datos) {
+            console.log(datos); // respuesta 200 con datos del servidor
+            //si el nombre del usuario es nuevo significa que todo va bien y el console log sle:
+            //{createdAt: 1531402041908, updatedAt: 1531402041908, id: 60, username: "ESTRELLA", password: "diana"}
+            alert("todo OK");
+          document.location = "file:///C:/Users/PC/Desktop/Ana/git3-proponerdia/index.html";//me lleva a loginprincipal
+          })
+          .fail(function (error){ // sale la variable error que es un objeto
+            console.log(error);
+            console.log(error.responseText);
+            //si el nombre ya existe en el servidor significa que error y en la consola sale error y en el network sale la respueta :Nombre de usuario duplicado
+//Nombre de usuario duplicado
+//{readyState: 4, getResponseHeader: ƒ, getAllResponseHeaders: ƒ, setRequestHeader: ƒ, overrideMimeType: ƒ, …}
+//responseText:"Nombre de usuario duplicado"...IMPORTANTE ...RESPUESTA DEL SERVIDOR PARA EL ERROR
+//setRequestHeader:ƒ ( name, value )
+//status:400 ... IMPORTANTE ... TIPO DE ERROR "400"
+//statusText:"Bad Request" ... IMPORTANTE ... DICE EL ERROR
+            //alert("login incorrecto");
+            if (error.responseText==='Nombre de usuario duplicado') {
+              $("h5#h5mensaje").text("Nombre de usuario duplicado");
+              $("input#username").addClass("rojo");
+            //  $("input#username").css("border-color", "red");
+          } else if (error.responseText==='Necesito username') { // si no ha puesto nombre
+              $("h5#h5mensaje").text("Necesito username");
+              $("input#username").addClass("rojo");
+            } else if (error.responseText==='Necesito password') { // si no ha puesto contraseña
+              $("h5#h5mensaje").text("Necesito password");
+              $("input#password").addClass("rojo");
+              }
+            });
+        });
+
+
+
+    </script>
+  </body>
+</html>

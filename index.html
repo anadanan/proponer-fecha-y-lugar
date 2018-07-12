@@ -39,11 +39,23 @@
       #fecha{
         margin-top: 25px;
         margin-bottom: 10px;
+
       }
 
     </style>
   </head>
+
   <body>
+  <div id="login" class="loginprincipal">
+    <h1>LOGIN ELEGIR DIA</h1>
+      <h3>INICIA SESION</h3>
+      Nombre: <input id="username" type="text" name="nombre" value="ana"><br><!--value="ana" es el nombre que ha puesto Joseba en su servidor para entrar-->
+      Password: <input id="password" type="password" name="password" value="diana"><br><!--value="diana"> es la contraseña que ha puesto Joseba en su servidor para entrar-->
+      <button id="iniciar-sesion" type="submit" name="button">ACEPTAR</button><br><br>
+      <a href="file:///C:/Users/PC/Desktop/Ana/git3-proponerdia/crearUsuario.html">Crear Usuario</a>
+   </div>
+
+    <div id="app" class="appprincipal" style="display:none">
     <h1 style="background-color: lightblue">Elige tu mejor día</h1>
     <header>
       <div class="seleccionar" id="seleccion" style="">
@@ -61,7 +73,7 @@
 
     <div class="caja rou nav">
     </div>
-
+  </div>
   </div>
   <!--<h2 data-votos="0">0 Votos</h2>
   // data guarda cualquier dato que queramos en el html entre ""
@@ -71,10 +83,36 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <script type="text/javascript">
+
+function iniciarSesion (){//función para iniciar sesión ... SE ACABA AL FINAL DE TODO
+    $("button#iniciar-sesion").click(function(){
+      var username= $("input#username").val();
+      var password= $("input#password").val();
+      $.ajax({
+        url: "http://192.168.100.62:1337/login/",
+        type: "POST",
+        data: {
+          username: username,
+          password: password
+        }
+      })
+      .done(iniciarAplicacion)//si el login es correcto llamo a la función iniciarAplicación
+      .fail(function (){
+        alert("login incorrecto");
+      });
+    });
+  }
+  //--------------------------------
+  function iniciarAplicacion(usuario){// cuando todo el login va bien, Joseba tiene puesto que nos manda la id
+    console.log(usuario);// sale en el console la id que me da el servidor {id:7}
+    var USUARIO_ID = usuario.id;//sacamos la id y la metemos en la variable
+    //variable en mayusculas porque no va cambiar nunca y la vamos a usar mucho - variable constante - por eso en mayusculas
+
+    $("div#login").hide();
+    $("div#app").show();
 
     $('button#botonCrear').click(function (event){
       var fecha = $('input#fecha').val();
@@ -86,94 +124,120 @@
         if (!lugar){
           return alert("selecciona lugar");
         }
-        $.post("http://192.168.100.63:1337/fecha",{fecha:fecha, lugar:lugar}, function(datosdelservidor){
+        $.post("http://192.168.100.62:1337/fecha",{fecha:fecha, lugar:lugar, usuario: USUARIO_ID}, function(datosdelservidor){
           console.log(datosdelservidor);
         $(".caja").append("<div data-id="+datosdelservidor.id+" class='card' style='width: 10rem;'><div class='card-body'><button type='button'class='card-link eliminar' name='button'>eliminar</button><br><h5 class='card-title'>"+ datosdelservidor.fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+datosdelservidor.lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h6 class='sumarvotos'><span>0</span> Votos</h6><button type='button'class='card-link restar' name='button'>restar</button></div></div>")
         });
+     });
+
+    $(document).on("click", ".votar", function votaUsuario(event){//para que funciones el boton de la caja
+    var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");//llegamos con el padre parent() desde el que ha recibido el evento al que tiene el data-id="+fechaCaja.id+"
+    var boton = $(event.currentTarget);
+    // en el get del foreach - al boton de votar le añadimos: data-id="+fechaCaja.id+"
+    // creamos la variable id donde metemos la id del boton votar que adquirimos con el data-id="+fechaCaja.id+"
+    console.log(id);
+    $.ajax({
+     url: "http://192.168.100.62:1337/fecha/sumar/" + id, // URL completa a la que hacer la peticion
+     type: 'PUT', // 'POST' o 'GET' o 'DELETE'
+     data: {
+       usuario: USUARIO_ID
+     } // Objeto con datos que queremos que el servidor reciva
+
+    }).done(function (datos) { // datos -> será lo que nos devuelva el servidor
+     // Código que queremos que se ejecute cuando el servidor nos haya respondido
+     console.log(datos); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK SUMADO!!)
+     var span = boton.next('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
+        //me busca el siguiente, en este caso el h2, me busca a su hijo, el span (todo lo he metido en el append)
+     var contador = parseInt(span.text());//para sacar el valor del span span.text()
+      //lo convertimos en numero con parseInt(span.text())
+      contador++
+      console.log(span);
+      console.log(contador);
+          span.text(contador);
+          boton.attr("disabled",true);//desactiva el boton votar
+          alert("Sólo se puede votar 1 vez");
+        boton.next('h6.sumarvotos').next('button.restar').attr("disabled", false);
+      })
+      .fail(function (error){ // sale la variable error que es un objeto
+        console.log(error);
+        console.log(error.responseText);
+        if (error.responseText==='Ya has votado antes, vaya pícaro') {
+          alert("Ya has votado antes, vaya pícaro");
+        }
       });
-
-$(document).on("click", ".votar", function votaUsuario(event){//para que funciones el boton de la caja
-  var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");//llegamos con el padre parent() desde el que ha recibido el evento al que tiene el data-id="+fechaCaja.id+"
-  var boton = $(event.currentTarget);
-  // en el get del foreach - al boton de votar le añadimos: data-id="+fechaCaja.id+"
-  // creamos la variable id donde metemos la id del boton votar que adquirimos con el data-id="+fechaCaja.id+"
-  console.log(id);
-  $.ajax({
-   url: "http://192.168.100.63:1337/fecha/sumar/" + id, // URL completa a la que hacer la peticion
-   type: 'PUT', // 'POST' o 'GET' o 'DELETE'
-   data: {} // Objeto con datos que queremos que el servidor reciva
- }).done(function (datos) { // datos -> será lo que nos devuelva el servidor
-   // Código que queremos que se ejecute cuando el servidor nos haya respondido
-   console.log(datos); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK SUMADO!!)
-   var span = boton.next('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
-      //me busca el siguiente, en este caso el h2, me busca a su hijo, el span (todo lo he metido en el append)
-   var contador = parseInt(span.text());//para sacar el valor del span span.text()
-    //lo convertimos en numero con parseInt(span.text())
-    contador++
-    console.log(span);
-    console.log(contador);
-        span.text(contador);
-        boton.attr("disabled",true);//desactiva el boton votar
-        alert("Sólo se puede votar 1 vez");
-      boton.next('h6.sumarvotos').next('button.restar').attr("disabled", false);
     });
-  });
 
-$(document).on("click", ".restar", function restaUsuario (event){//para que funciones el boton de la caja
-  var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");
-  console.log(id);
-  var boton = $(event.currentTarget);
+    $(document).on("click", ".restar", function restaUsuario (event){//para que funciones el boton de la caja
+    var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");
+    console.log(id);
+    var boton = $(event.currentTarget);
 
-  $.ajax({
-   url: "http://192.168.100.63:1337/fecha/restar/" + id, // URL completa a la que hacer la peticion
-   type: 'PUT', // 'POST' o 'GET' o 'DELETE'
-   data: {} // Objeto con datos que queremos que el servidor reciva (en este caso está vacio)
- }).done(function (datos) { // datos -> será lo que nos devuelva el servidor
-   // Código que queremos que se ejecute cuando el servidor nos haya respondido
+      $.ajax({
+       url: "http://192.168.100.62:1337/fecha/restar/" + id, // URL completa a la que hacer la peticion
+       type: 'PUT', // 'POST' o 'GET' o 'DELETE'
+       data: {
+         usuario: USUARIO_ID
+       } // Objeto con datos que queremos que el servidor reciva (en este caso está vacio)
 
-  var spanrestar = boton.prev('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
-  var restar = spanrestar.text();//para sacar el valor del span span.text()
-  restar--
-  console.log(restar);
-  console.log(spanrestar);
-  spanrestar.text(restar);
-    boton.attr("disabled",true);// desativa el boton restar
-    alert("Sólo se puede restar 1 vez");
-    boton.prev('h6.sumarvotos').prev('button.votar').attr("disabled", false);
-    console.log(datos); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK RESTADO!!)
-  });
-});
-//ip joseba ... http://192.168.100.63:1337/fechas
-$(document).on("click", ".eliminar", function eliminafecha(event){//para que funciones el boton de la caja
-  var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");
-  var boton = $(event.currentTarget);//creamos una variable con el que ha recibido el evento para que jquery no lo pierda
-  // en el get del foreach - al boton de votar le añadimos: data-id="+fechaCaja.id+"
-  // creamos la variable id donde metemos la id del boton votar que adquirimos con el data-id="+fechaCaja.id+"
-  console.log(id);
-  $.ajax({
-   url: "http://192.168.100.63:1337/fecha/" + id, // URL completa a la que hacer la peticion
-   type: 'DELETE', // 'POST' o 'GET' o 'PUT'
-   data: {} // Objeto con datos que queremos que el servidor reciva
- }).done(function (datos) { // datos -> será lo que nos devuelva el servidor
-   // Código que queremos que se ejecute cuando el servidor nos haya respondido
-   console.log(datos); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK SUMADO!!)
-        boton.parent('div.card-body').parent('div.card').remove();//elimina el boton eliminar (hemos usdo la variable boton con el evento)
-  // accedemos a la caja para eliminar subiendo a su padre
-  //    $(event.currentTarget).next('h6.sumarvotos').next('button.restar').attr("disabled", false);
+      }).done(function (datos) { // datos -> será lo que nos devuelva el servidor
+       // Código que queremos que se ejecute cuando el servidor nos haya respondido
+
+      var spanrestar = boton.prev('h6.sumarvotos').children('span');//para que detecte el boton de cada caja
+      var restar = spanrestar.text();//para sacar el valor del span span.text()
+      restar--
+      console.log(restar);
+      console.log(spanrestar);
+      spanrestar.text(restar);
+        boton.attr("disabled",true);// desativa el boton restar
+        alert("Sólo se puede restar 1 vez");
+        boton.prev('h6.sumarvotos').prev('button.votar').attr("disabled", false);
+        console.log(datos); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK RESTADO!!)
+      });
+      });
+    //ip joseba ... http://192.168.100.62:1337/fechas
+    $(document).on("click", ".eliminar", function eliminafecha(event){//para que funciones el boton de la caja
+    var id= $(event.currentTarget).parent('div.card-body').parent('div.card').data("id");
+    var boton = $(event.currentTarget);//creamos una variable con el que ha recibido el evento para que jquery no lo pierda
+    // en el get del foreach - al boton de votar le añadimos: data-id="+fechaCaja.id+"
+    // creamos la variable id donde metemos la id del boton votar que adquirimos con el data-id="+fechaCaja.id+"
+    console.log(id);
+    $.ajax({
+     url: "http://192.168.100.62:1337/fecha/" + id, // URL completa a la que hacer la peticion
+     type: 'DELETE', // 'POST' o 'GET' o 'PUT'
+     data: {
+       usuario: USUARIO_ID//enviamos nuestra id
+     } // Objeto con datos que queremos que el servidor reciva
+      }).done(function (borrar) { // datos -> será lo que nos devuelva el servidor
+     // Código que queremos que se ejecute cuando el servidor nos haya respondido
+     console.log(borrar); // pintar respuesta que nos manda el servidor de Joseba (en el caso que haya respuesta ej.: OK SUMADO!!)
+          boton.parent('div.card-body').parent('div.card').remove();//elimina el boton eliminar (hemos usdo la variable boton con el evento)
+    // accedemos a la caja para eliminar subiendo a su padre
+    //    $(event.currentTarget).next('h6.sumarvotos').next('button.restar').attr("disabled", false);
+      });
     });
-  });
 
-$.get("http://192.168.100.63:1337/fechas", function (fechas){//hacemos una solicitud al servidor de Joseba
-  console.log(fechas);//nos devuelve un array
-  fechas.forEach(function (fechaCaja) {
-$(".caja").append("<div data-id="+fechaCaja.id+" class='card' style='width: 10rem;'><div class='card-body' nav-item><button type='button'class='card-link eliminar' name='button'>eliminar</button><br><h5 class='card-title'>"+ fechaCaja.fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+fechaCaja.lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h6 class='sumarvotos'><span>"+ fechaCaja.votos +"</span> Votos</h6><button type='button'class='card-link restar' name='button'>restar</button></div></div>")
-// DATOS QUE SOLICITAMOS AL SERVIDOR
-//<h5 class='card-title'>"+ fechaCaja.fecha +"</h5>
-//<h6 class='card-subtitle mb-2 text-muted'>"+fechaCaja.lugar+"</h6>
-//<span>"+ fechaCaja.votos +"</span> ... LOS VOTOS DE TODOS
-});
-});
+    $.get("http://192.168.100.62:1337/fechas", function (fechas){//hacemos una solicitud al servidor de Joseba
+        console.log(fechas);//nos devuelve un array
+        //creador:{createdAt: 1531318306970, updatedAt: 1531318306970, id: 3, username: "iraide"}
+        fechas.forEach(function (fechaCaja) {
 
+          if (USUARIO_ID===fechaCaja.creador.id) {//para que el boton eliminar solo salga en los que yo puedo eliminar (sólo puedo eliminar los que yo creo)
+            $(".caja").append("<div data-id="+fechaCaja.id+" class='card' style='width: 10rem;'><div class='card-body' nav-item><h5 class='card-title'>"+ fechaCaja.creador.username +"</h5><button type='button'class='card-link eliminar' name='button'>eliminar</button><br><h5 class='card-title'>"+ fechaCaja.fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+fechaCaja.lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h6 class='sumarvotos'><span>"+ fechaCaja.votos +"</span> Votos</h6><button type='button'class='card-link restar' name='button'>restar</button></div></div>");
+          }else {
+            $(".caja").append("<div data-id="+fechaCaja.id+" class='card' style='width: 10rem;'><div class='card-body' nav-item><h5 class='card-title'>"+ fechaCaja.creador.username +"</h5><br><h5 class='card-title'>"+ fechaCaja.fecha +"</h5><h6 class='card-subtitle mb-2 text-muted'>"+fechaCaja.lugar+"</h6><button type='button'class='card-link votar' name='button'>votar</button><h6 class='sumarvotos'><span>"+ fechaCaja.votos +"</span> Votos</h6><button type='button'class='card-link restar' name='button'>restar</button></div></div>");
+          }
+          //creador:{createdAt: 1531318306970, updatedAt: 1531318306970, id: 3, username: "iraide"}
+            // DATOS QUE SOLICITAMOS AL SERVIDOR
+            //<h5 class='card-title'>"+ fechaCaja.fecha +"</h5>
+            //<h6 class='card-subtitle mb-2 text-muted'>"+fechaCaja.lugar+"</h6>
+            //<span>"+ fechaCaja.votos +"</span> ... LOS VOTOS DE TODOS
+
+
+            });
+        });
+
+}
+iniciarSesion();//llamamos a la función iniciarSesion
 
     </script>
   </body>
